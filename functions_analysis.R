@@ -86,8 +86,8 @@ anz_hist_ups2 <- function(anz) {
    anz_plot <- ggplot(anz_long, aes(Run, Count)) +
     geom_bar(stat = "identity", fill = "steelblue") +
     facet_wrap(~ plot, scales = "free") +
-    theme_small() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    theme_anz() +
+    # theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     labs(title = "protein and peptide Counts", caption = paste0("anz_", MS_name), x = "", y = "count")
 }
 
@@ -167,8 +167,8 @@ anz_hist_ups3 <- function(anz) {
   anz_plot <- ggplot(anz_long, aes(Run, Count)) +
     geom_bar(stat = "identity", fill = "steelblue") +
     facet_wrap(~ plot, scales = "free") +
-    theme_small() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    theme_anz() +
+    # theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     labs(title = "protein and peptide Counts", caption = paste0("anz_", MS_name), x = "", y = "count")
 }
 
@@ -277,7 +277,7 @@ ups2_score <- function(data, protein_tp = ups2_tp, ups2_standard = get("ups2_sta
     theme(legend.position = "none") +
     geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 1) +
     geom_text(data = ups2_score_info, aes(x = Inf, y = Inf, label = cor_score_2),
-              hjust = 1.1, vjust = 1.1, size = 3, inherit.aes = FALSE) # +
+              hjust = 1.1, vjust = 1.1, size = 7, inherit.aes = FALSE) # +
     # geom_text(data = ups2_score_info, aes(x = Inf, y = Inf, label = slope),
     #           inherit.aes = FALSE, hjust = 1.1, vjust = 2.5, size = 3, color = "black") +
     # geom_text(data = ups2_score_info, aes(x = Inf, y = Inf, label = intercept),
@@ -286,15 +286,20 @@ ups2_score <- function(data, protein_tp = ups2_tp, ups2_standard = get("ups2_sta
   return(data)}
 
 
-ups3_score <- function(data, protein_tp = ups3_tp, ups3_standard = get("ups3_standard", envir = .GlobalEnv), score_name = get("score_name", envir = parent.frame())) {
+ups3_score <- function(data, protein_tp = ups3_tp, ups3_standard = get("ups3_standard", envir = .GlobalEnv), score_name = get("score_name", envir = parent.frame()), mean_score = "no") {
   ups3_score <- data %>% 
     filter(grepl("ups3", Protein.Group), intensity > 0) %>% 
     # group_by(Run, Protein.Group) %>%
     # filter(abs(intensity - median(intensity)) / median(intensity) <= 10) %>%   # filter peptides whose intensity lies outside the 100% range
     # ungroup() %>% 
     get_score(score_name = score_name, protein_tp) %>% 
-    mutate(protein = sub("ups3.*", "", Protein.Group)) %>% 
     condition_name() %>%
+    {if(mean_score == "yes"){   # mean score for each protein in each condition
+      group_by(., condition, Protein.Group) %>%
+        summarise(int_score = mean(int_score), .groups = "drop")
+    } else {
+      .}} %>%
+    mutate(protein = sub("ups3.*", "", Protein.Group)) %>% 
     mutate(ups3_amount = ups3_standard$`amount[pmol]`[match(protein, ups3_standard$protein)]) %>% 
     label_conditions()
   
@@ -319,7 +324,7 @@ ups3_score <- function(data, protein_tp = ups3_tp, ups3_standard = get("ups3_sta
     labs(title = paste0("correlation ", score_name, " with ups3 amount"), caption = paste0("ups3_", score_name, "_", MS_name), x = "log10 ups3 in standard [pmol in vial]", y = paste0("log10 ", score_name, " score")) +
     geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 1) +
     geom_text(data = ups3_score_info, aes(x = Inf, y = Inf, label = cor_score_2),
-              hjust = 1.1, vjust = 1.1, size = 3, inherit.aes = FALSE) # +
+              hjust = 1.1, vjust = 1.1, size = 7, inherit.aes = FALSE) # +
     # geom_text(data = ups3_score_info, aes(x = Inf, y = Inf, label = slope),
     #           inherit.aes = FALSE, hjust = 1.1, vjust = 2.5, size = 3, color = "black") +
     # geom_text(data = ups3_score_info, aes(x = Inf, y = Inf, label = intercept),
@@ -359,7 +364,7 @@ ups3_MQ_score <- function(data_pg, score = "iBAQ", ups3_standard = get("ups3_sta
     labs(title = paste0("correlation ", score, " with ups3 amount"), caption = paste0("ups3_MQ_", score, "_", MS_name), x = "ups3 in standard [pmol in vial]", y = paste0(score, " score (log10)")) +
     geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 1) +
     geom_text(data = ups3_MQ_score_info, aes(x = Inf, y = Inf, label = cor_score_2),
-              hjust = 1.1, vjust = 1.1, size = 3, inherit.aes = FALSE) +
+              hjust = 1.1, vjust = 1.1, size = 7, inherit.aes = FALSE) +
     geom_text(data = ups3_MQ_score_info, aes(x = Inf, y = Inf, label = slope),
               inherit.aes = FALSE, hjust = 1.1, vjust = 2.5, size = 3, color = "black") +
     geom_text(data = ups3_MQ_score_info, aes(x = Inf, y = Inf, label = intercept),
@@ -452,7 +457,7 @@ u2os_score <- function(data, protein_tp = u2os_tp, standard = get("standard", en
     # geom_boxplot(data = subset(u2os_score, (highlight == 3 & proteasome_class == 2)), color = "darkblue", width = 0.05) +   # proteasome 19S regulatory
     # geom_boxplot(data = subset(u2os_score, (highlight == 3 & proteasome_class == 3)), color = "lightblue2", width = 0.05) +   # proteasome Mitochondrial
     theme_large() +
-    theme(axis.text.x = element_text(size = 11)) +   # x labels for sam are too big
+    # theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     labs(x = "condition", y = paste0("log10 ", score_name),
          title = paste0(score_name, " of U2OS proteins (log10)"),
          # subtitle = "sore based on Ms1.Normalised",
@@ -543,8 +548,8 @@ u2os_absolut <- function(data, standard = get("standard", envir = parent.frame()
   
   # get one intensity for each core histone (summed isoformes)
   core_histone_sum_fmol <- u2os_absolut_fmol %>%
-    filter(histone_class > 0) %>% 
-    # filter(histone_class == 1 | histone_class == 2 | histone_class == 3) %>% 
+    filter(histone_class > 0) %>%
+    # filter(histone_class == 1 | histone_class == 2 | histone_class == 3) %>%
     group_by(condition_label, histone_class) %>%   # Run, if i look at replicates
     summarise(absolute = sum(absolute, na.rm = TRUE)) %>%
     ungroup() %>% 
@@ -565,11 +570,12 @@ u2os_absolut <- function(data, standard = get("standard", envir = parent.frame()
     geom_boxplot(data = subset(u2os_absolut_fmol, (highlight == 3 & proteasome_class == 3)), color = "lightblue2", width = 0.05) +   # proteasome Mitochondrial
     # geom_text_repel(data = subset(u2os_absolut_fmol, highlight == 2 & histone_class == 1), aes(label = Protein.Group), vjust = -1.5, hjust = 1, color = "darkred", size = 2, max.overlaps = Inf) +   # max.overlaps = Inf allows many labels if needed
     geom_point(data = core_histone_sum_fmol, aes(condition_label, log10(absolute)), color = "darkred", size = 3) +
-    geom_text_repel(data = core_histone_sum_fmol, aes(condition_label, log10(absolute), label = histone_label), color = "darkred", size = 4) +
+    geom_text_repel(data = core_histone_sum_fmol, aes(condition_label, log10(absolute), label = histone_label), color = "red3", size = 4) +
     theme_large() +
     labs(x = "condition", y = paste0("log10 protein amount [fmol]"),
-         title = paste0("absolute amount of U2OS proteins (log10(fmol))"), subtitle = "red - histones, green - ribosomes, blue - proteasome",
-        caption = paste0("log10(u2os_amount_fmol)_", score_name, "_", MS_name))
+         title = paste0(MS_name, " ", standard), 
+         # subtitle = "red - histones, green - ribosomes, blue - proteasome",
+        caption = paste0("u2os_fmol_", score_name, "_", MS_name, "_", standard))
 
   u2os_iqr_fmol <- u2os_absolut_fmol %>%
     group_by(condition, highlight, ribosome_class, histone_class, proteasome_class) %>%
@@ -640,8 +646,8 @@ u2os_absolut <- function(data, standard = get("standard", envir = parent.frame()
   
   # get one intensity for each core histone (summed isoformes)
   core_histone_sum_pg <- u2os_absolut_pg %>%
-    filter(histone_class > 0) %>% 
-    # filter(histone_class == 1 | histone_class == 2 | histone_class == 3) %>% 
+    filter(histone_class > 0) %>%
+    # filter(histone_class == 1 | histone_class == 2 | histone_class == 3) %>%
     group_by(condition_label, histone_class) %>%   # Run, if i look at replicates
     summarise(absolute = sum(absolute, na.rm = TRUE)) %>%
     ungroup() %>% 
@@ -662,11 +668,13 @@ u2os_absolut <- function(data, standard = get("standard", envir = parent.frame()
     geom_boxplot(data = subset(u2os_absolut_pg, (highlight == 3 & proteasome_class == 3)), color = "lightblue2", width = 0.05) +   # proteasome Mitochondrial
     # geom_text_repel(data = subset(u2os_absolut_pg, highlight == 2 & histone_class == 1), aes(label = Protein.Group), vjust = -1.5, hjust = 1, color = "darkred", size = 2, max.overlaps = Inf) +   # max.overlaps = Inf allows many labels if needed
     geom_point(data = core_histone_sum_pg, aes(condition_label, log10(absolute)), color = "darkred", size = 3) +
-    geom_text_repel(data = core_histone_sum_pg, aes(condition_label, log10(absolute), label = histone_label), color = "darkred", size = 4) +
+    geom_text_repel(data = core_histone_sum_pg, aes(condition_label, log10(absolute), label = histone_label), color = "red3", size = 4) +
     theme_large() +
-    labs(x = "conditon", y = paste0("log10 protein amount [pg]"),
-         title = paste0("absolute amount of U2OS proteins (log10(pg))"), subtitle = "red - histones, green - ribosomes, blue - proteasome",
-         caption = paste0("log10(u2os_amount_pg)_", score_name, "_", MS_name))
+    labs(x = "conditon", y = paste0("log10 protein amount [pg/cell]"),
+         title = paste0(MS_name, " ", standard), 
+         # title = paste0("absolute amount of U2OS proteins (log10(pg))"), 
+         # subtitle = "red - histones, green - ribosomes, blue - proteasome",
+         caption = paste0("u2os_pg_", score_name, "_", MS_name, "_", standard))
   
   
   u2os_iqr_pg <- u2os_absolut_pg %>%
@@ -740,8 +748,8 @@ ups2_peptides <- function(data) {
   attr(data, "peptides_fc_plot") <- ggplot(peptides_fc, aes(factor(condition_label.l, levels = condition_labels), 
                                                             log2_MS1_Ratio)) +
     geom_boxplot() +
-    geom_hline(yintercept = 0) +
-    stat_summary(fun = median, geom = "text", aes(label = round(after_stat(y), 2)), size = 4, vjust = -0.6, color = "red") +   # show mean
+    # geom_hline(yintercept = 0) +
+    stat_summary(fun = median, geom = "text", aes(label = round(after_stat(y), 2)), size = 5, vjust = -0.6, color = "red3") +   # show mean
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +   # angle for runs on x axis 
     theme_small() +
     labs(x = "Condition", y = "log2(L/H)",
@@ -789,9 +797,6 @@ ups2_peptides <- function(data) {
       scale_color_manual(values = my_colors) +   # color palette
       theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
       theme(legend.position = "none")
-
-
-  
 
   
   return(data)}

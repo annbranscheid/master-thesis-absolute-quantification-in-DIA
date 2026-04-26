@@ -39,7 +39,7 @@ conflicted::conflicts_prefer(
 
 remove_conditions <- c()
 
-theme_small <- function(base_size = 11) {
+theme_small <- function(base_size = 18) {
   theme_grey(base_size = base_size) +
     theme(
       plot.title    = element_text(size = 1.2 * base_size, face = "bold"),
@@ -47,22 +47,39 @@ theme_small <- function(base_size = 11) {
       axis.title    = element_text(size = 0.9 * base_size),
       axis.text.x   = element_text(size = 0.7 * base_size),
       axis.text.y   = element_text(size = 0.8 * base_size),
-      plot.caption  = element_text(size = 8, hjust = 1),
+      plot.caption  = element_text(size = 10, hjust = 1),
       # Facet strips (if i want to change the facet title background)
       # strip.background = element_rect(fill  = "grey85",colour = "grey50"),
       # strip.text = element_text(face = "bold", size = 0.9 * base_size)
     )
 }
 
-theme_large <- function(base_size = 16) {
+theme_anz <- function(base_size = 18) {
   theme_grey(base_size = base_size) +
     theme(
       plot.title    = element_text(size = 1.2 * base_size, face = "bold"),
       plot.subtitle = element_text(size = 1 * base_size),
       axis.title    = element_text(size = 0.9 * base_size),
+      axis.title.y = element_text(margin = margin(r = 15)),
+      axis.text.x   = element_text(size = 0.35 * base_size, angle = 45, hjust = 1),
+      axis.text.y   = element_text(size = 0.8 * base_size),
+      plot.caption  = element_text(size = 10, hjust = 1),
+      plot.margin = margin(t = 10, r = 20, b = 10, l = 30)
+      # Facet strips (if i want to change the facet title background)
+      # strip.background = element_rect(fill  = "grey85",colour = "grey50"),
+      # strip.text = element_text(face = "bold", size = 0.9 * base_size)
+    )
+}
+
+theme_large <- function(base_size = 22) {
+  theme_grey(base_size = base_size) +
+    theme(
+      plot.title    = element_text(size = 1.4 * base_size, face = "bold"),
+      plot.subtitle = element_text(size = 1.2 * base_size),
+      axis.title    = element_text(size = 1 * base_size),
       axis.text.x   = element_text(size = 0.7 * base_size),
       axis.text.y   = element_text(size = 0.8 * base_size),
-      plot.caption  = element_text(size = 8, hjust = 1),
+      plot.caption  = element_text(size = 10, hjust = 1),
       # Facet strips (if i want to change the facet title background)
       # strip.background = element_rect(fill  = "grey85",colour = "grey50"),
       # strip.text = element_text(face = "bold", size = 0.9 * base_size)
